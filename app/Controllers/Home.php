@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 class Home extends BaseController
 {
-    public function index(): string
+    public function index()
     {
         // Jika sudah login, redirect ke dashboard
         if (session()->get('logged_in')) {
@@ -14,7 +14,7 @@ class Home extends BaseController
         return view('landing');
     }
 
-    public function dashboard(): string
+    public function dashboard()
     {
         // Harus login untuk akses dashboard
         if (!session()->get('logged_in')) {
