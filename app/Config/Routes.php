@@ -46,8 +46,3 @@ $routes->post('/pengaturan/sandi', 'Pengaturan::sandiUpdate');
 $routes->get('/pengaturan/preferensi', 'Pengaturan::preferensi');
 $routes->post('/pengaturan/preferensi', 'Pengaturan::preferensiUpdate');
 $routes->get('/pengaturan/tampilan', 'Pengaturan::tampilan');
-$routes->get('/pengaturan/api-key', 'Pengaturan::apiKey');
-$routes->post('/pengaturan/api-key/store', 'Pengaturan::apiKeyStore');
-$routes->get('/pengaturan/api-key/edit/(:num)', 'Pengaturan::apiKeyEdit/$1');
-$routes->post('/pengaturan/api-key/update/(:num)', 'Pengaturan::apiKeyUpdate/$1');
-$routes->post('/pengaturan/api-key/delete/(:num)', 'Pengaturan::apiKeyDelete/$1');

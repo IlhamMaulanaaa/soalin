@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Models\ApiKeyModel;
 use App\Models\UserModel;
 
 class Pengaturan extends BaseController
@@ -96,63 +95,5 @@ class Pengaturan extends BaseController
     {
         if (!session()->get('logged_in')) return redirect()->to('/login');
         return view('pengaturan/tampilan');
-    }
-
-    // ===== API Key CRUD =====
-    public function apiKey()
-    {
-        if (!session()->get('logged_in')) return redirect()->to('/login');
-        $model = new ApiKeyModel();
-        return view('pengaturan/api_key', [
-            'apiKeys' => $model->findAll(),
-        ]);
-    }
-
-    public function apiKeyStore()
-    {
-        if (!session()->get('logged_in')) return redirect()->to('/login');
-        $model = new ApiKeyModel();
-        $keyName = trim($this->request->getPost('key_name'));
-        $apiKey  = trim($this->request->getPost('api_key'));
-
-        if (empty($keyName) || empty($apiKey)) {
-            session()->setFlashdata('api_error', 'Nama key dan API key tidak boleh kosong!');
-            return redirect()->to('/pengaturan/api-key');
-        }
-
-        $model->insert(['key_name' => $keyName, 'api_key' => $apiKey]);
-        session()->setFlashdata('api_success', 'API Key berhasil ditambahkan!');
-        return redirect()->to('/pengaturan/api-key');
-    }
-
-    public function apiKeyEdit($id)
-    {
-        if (!session()->get('logged_in')) return redirect()->to('/login');
-        $model = new ApiKeyModel();
-        return view('pengaturan/api_key', [
-            'apiKeys' => $model->findAll(),
-            'editKey' => $model->find($id),
-        ]);
-    }
-
-    public function apiKeyUpdate($id)
-    {
-        if (!session()->get('logged_in')) return redirect()->to('/login');
-        $model = new ApiKeyModel();
-        $model->update($id, [
-            'key_name' => trim($this->request->getPost('key_name')),
-            'api_key'  => trim($this->request->getPost('api_key')),
-        ]);
-        session()->setFlashdata('api_success', 'API Key berhasil diperbarui!');
-        return redirect()->to('/pengaturan/api-key');
-    }
-
-    public function apiKeyDelete($id)
-    {
-        if (!session()->get('logged_in')) return redirect()->to('/login');
-        $model = new ApiKeyModel();
-        $model->delete($id);
-        session()->setFlashdata('api_success', 'API Key berhasil dihapus.');
-        return redirect()->to('/pengaturan/api-key');
     }
 }

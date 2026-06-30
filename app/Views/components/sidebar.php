@@ -81,11 +81,6 @@
             <i class="bi bi-circle"></i><span>Tampilan</span>
           </a>
         </li>
-        <li>
-          <a href="<?= base_url('pengaturan/api-key') ?>" class="<?= ($uri === 'pengaturan/api-key') ? 'active' : '' ?>">
-            <i class="bi bi-circle"></i><span>API Key</span>
-          </a>
-        </li>
       </ul>
     </li>
 

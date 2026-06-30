@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Models\ApiKeyModel;
 
 class GenerateSoal extends BaseController
 {
@@ -108,9 +107,7 @@ class GenerateSoal extends BaseController
         $prompt .= "Langsung tulis soal-soalnya tanpa pengantar.";
 
         // Ambil API key dari database atau .env
-        $apiKeyModel = new ApiKeyModel();
-        $savedKey = $apiKeyModel->first();
-        $apiKey = $savedKey ? $savedKey['api_key'] : (env('GROQ_API_KEY') ?: '');
+        $apiKey = env('GROQ_API_KEY') ?: '';
 
         if (empty($apiKey)) {
             return redirect()->to('/generate-soal')->with('error', 'API Key belum dikonfigurasi. Silakan tambahkan di Pengaturan > API Key.');

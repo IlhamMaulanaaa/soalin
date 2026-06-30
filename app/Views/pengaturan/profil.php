@@ -77,9 +77,6 @@
     <a href="<?= base_url('pengaturan/tampilan') ?>" class="settings-nav-link <?= (uri_string() === 'pengaturan/tampilan') ? 'active' : '' ?>">
       <i class="bi bi-palette"></i> Tampilan
     </a>
-    <a href="<?= base_url('pengaturan/api-key') ?>" class="settings-nav-link <?= (uri_string() === 'pengaturan/api-key') ? 'active' : '' ?>">
-      <i class="bi bi-key"></i> API Key
-    </a>
     <div class="settings-nav-divider"></div>
     <a href="<?= base_url('logout') ?>" class="settings-nav-link danger">
       <i class="bi bi-box-arrow-right"></i> Keluar
