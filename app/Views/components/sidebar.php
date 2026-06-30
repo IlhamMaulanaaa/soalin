@@ -18,11 +18,39 @@
     </li>
 
     <li class="nav-item">
-      <a class="nav-link <?= str_starts_with($uri, 'bank-soal') ? '' : 'collapsed' ?>" href="<?= base_url('bank-soal') ?>">
+      <a class="nav-link <?= str_starts_with($uri, 'bank-soal') && !str_starts_with($uri, 'admin/bank-soal') ? '' : 'collapsed' ?>" href="<?= base_url('bank-soal') ?>">
         <i class="bi bi-collection"></i>
         <span>Bank Soal</span>
       </a>
     </li>
+
+    <?php if (session()->get('role') === 'admin'): ?>
+    <li class="nav-item">
+      <a class="nav-link <?= str_starts_with($uri, 'admin') ? '' : 'collapsed' ?>"
+         data-bs-target="#admin-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-shield-lock"></i>
+        <span>Admin</span>
+        <i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="admin-nav" class="nav-content collapse <?= str_starts_with($uri, 'admin') ? 'show' : '' ?>">
+        <li>
+          <a href="<?= base_url('admin/dashboard') ?>" class="<?= ($uri === 'admin/dashboard') ? 'active' : '' ?>">
+            <i class="bi bi-circle"></i><span>Dashboard Admin</span>
+          </a>
+        </li>
+        <li>
+          <a href="<?= base_url('admin/users') ?>" class="<?= ($uri === 'admin/users') ? 'active' : '' ?>">
+            <i class="bi bi-circle"></i><span>Kelola Guru</span>
+          </a>
+        </li>
+        <li>
+          <a href="<?= base_url('admin/bank-soal') ?>" class="<?= str_starts_with($uri, 'admin/bank-soal') ? 'active' : '' ?>">
+            <i class="bi bi-circle"></i><span>Semua Bank Soal</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <?php endif; ?>
 
     <!-- Pengaturan Dropdown -->
     <li class="nav-item">

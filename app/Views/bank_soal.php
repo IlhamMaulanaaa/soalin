@@ -43,7 +43,19 @@
         <div class="alert alert-success"><?= session()->getFlashdata('success') ?></div>
     <?php endif; ?>
 
-    <div class="row g-4">
+    <div class="filter-box d-flex flex-wrap align-items-center gap-2 mb-4">
+        <i class="bi bi-search text-muted"></i>
+        <input type="text" id="searchSoal" class="form-control" placeholder="Cari mapel, jenjang, tipe..." style="max-width:320px;border-radius:10px;font-size:0.9rem;" oninput="filterSoal()">
+        <select id="filterTipe" class="form-select" style="max-width:160px;border-radius:10px;font-size:0.9rem;" onchange="filterSoal()">
+            <option value="">Semua Tipe</option>
+            <option value="Pilihan Ganda">Pilihan Ganda</option>
+            <option value="Essay">Essay</option>
+            <option value="Benar/Salah">Benar/Salah</option>
+            <option value="Campuran">Campuran</option>
+        </select>
+    </div>
+
+    <div class="row g-4" id="soalGrid">
         <?php if (empty($soal_list)): ?>
             <div class="col-12">
                 <div class="kosong">
@@ -55,7 +67,7 @@
             </div>
         <?php else: ?>
             <?php foreach ($soal_list as $s): ?>
-                <div class="col-lg-4">
+                <div class="col-lg-4 soal-card" data-mapel="<?= strtolower(esc($s['mapel'])) ?>" data-jenjang="<?= strtolower(esc($s['jenjang'])) ?>" data-tipe="<?= strtolower(esc($s['tipe_soal'])) ?>">
                     <div class="bank-card">
                         <div class="bank-top">
                             <div class="mapel-badge"><?= esc(strtoupper($s['mapel'])) ?></div>
@@ -69,7 +81,10 @@
                             </div>
                         </div>
                         <div class="bank-footer">
-                            <a href="<?= base_url('bank-soal/detail/' . $s['id']) ?>" class="btn-view"><i class="bi bi-eye"></i> Lihat</a>
+                            <div class="d-flex gap-2">
+                                <a href="<?= base_url('bank-soal/detail/' . $s['id']) ?>" class="btn-view"><i class="bi bi-eye"></i> Lihat</a>
+                                <button class="btn-hapus-card" onclick="hapusSoal(<?= $s['id'] ?>, this)"><i class="bi bi-trash"></i></button>
+                            </div>
                             <span class="badge-level <?= strtolower(esc($s['kesulitan'])) ?>"><?= strtoupper(esc($s['kesulitan'])) ?></span>
                         </div>
                     </div>
@@ -87,5 +102,37 @@
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+function filterSoal() {
+  const q = document.getElementById('searchSoal').value.toLowerCase();
+  const t = document.getElementById('filterTipe').value.toLowerCase();
+  document.querySelectorAll('.soal-card').forEach(card => {
+    const text = card.dataset.mapel + ' ' + card.dataset.jenjang + ' ' + card.dataset.tipe;
+    const matchSearch = !q || text.includes(q);
+    const matchTipe = !t || card.dataset.tipe === t;
+    card.style.display = (matchSearch && matchTipe) ? '' : 'none';
+  });
+}
+
+function hapusSoal(id, btn) {
+  if (!confirm('Yakin ingin menghapus soal ini?')) return;
+  fetch('<?= base_url('bank-soal/hapus') ?>/' + id, {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.status === 'success') {
+      const card = btn.closest('.soal-card');
+      card.style.transition = 'all 0.3s';
+      card.style.opacity = '0';
+      setTimeout(() => card.remove(), 300);
+    } else {
+      alert(res.message);
+    }
+  });
+}
+</script>
 
 <?= $this->endSection() ?>

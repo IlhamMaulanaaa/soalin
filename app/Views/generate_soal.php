@@ -302,6 +302,7 @@
 let currentStep = 1;
 let uploadedFile = null;
 let generatedSoal = [];
+let generatedRawText = '';
 
 // ===== Step Navigation =====
 function goStep(step) {
@@ -393,6 +394,17 @@ function doGenerate() {
   goStep(3);
   const rawText = <?= json_encode($soal_result) ?>;
   renderRawSoal(rawText);
+  document.getElementById('hiddenMapel').value = <?= json_encode($mapel ?? '') ?>;
+  document.getElementById('hiddenJenjang').value = <?= json_encode($jenjang ?? '') ?>;
+  document.getElementById('hiddenJumlah').value = <?= json_encode($jumlah ?? 10) ?>;
+  document.getElementById('hiddenKesulitan').value = <?= json_encode($kesulitan ?? '') ?>;
+  document.getElementById('hiddenTipe').value = <?= json_encode($tipe_soal ?? '') ?>;
+  document.getElementById('resultMeta')?.remove();
+  const metaDiv = document.createElement('div');
+  metaDiv.id = 'resultMeta';
+  metaDiv.style.cssText = 'background:#f0f7ff;border-radius:10px;padding:0.75rem 1rem;margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:0.5rem 1.5rem;font-size:0.85rem;color:#334155;';
+  metaDiv.innerHTML = '<span><strong>Mapel:</strong> <?= esc($mapel ?? '') ?></span><span><strong>Jenjang:</strong> <?= esc($jenjang ?? '') ?></span><span><strong>Tipe:</strong> <?= esc($tipe_soal ?? '') ?></span><span><strong>Kesulitan:</strong> <?= esc($kesulitan ?? '') ?></span>';
+  document.getElementById('resultContainer').prepend(metaDiv);
 })();
 <?php elseif (session()->getFlashdata('error')): ?>
 (function() {
@@ -485,9 +497,15 @@ function simpanBankSoal() {
   .then(r => r.json())
   .then(res => {
     if (res.status === 'success') {
-      btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Tersimpan di Bank Soal!';
+      btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Tersimpan!';
       btn.style.background = '#15803d';
-      btn.disabled = false;
+      btn.disabled = 'disabled';
+      const link = document.createElement('a');
+      link.href = '<?= base_url('bank-soal') ?>';
+      link.className = 'btn-outline-custom';
+      link.style.cssText = 'margin-left:0.5rem;background:#fff;color:#0d47a1;border:2px solid #0d47a1;border-radius:10px;padding:10px 16px;font-weight:600;text-decoration:none;';
+      link.innerHTML = '<i class="bi bi-collection"></i> Lihat di Bank Soal';
+      btn.parentNode.insertBefore(link, btn.nextSibling);
     } else {
       alert(res.message);
       btn.innerHTML = origText;

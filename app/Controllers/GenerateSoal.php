@@ -29,9 +29,42 @@ class GenerateSoal extends BaseController
         $fileContent = '';
         $file = $this->request->getFile('file');
         if ($file && $file->isValid() && !$file->hasMoved()) {
-            $mime = $file->getClientMimeType();
-            if (str_contains($mime, 'text') || in_array($file->getExtension(), ['txt', 'pdf', 'doc', 'docx'])) {
-                $fileContent = file_get_contents($file->getTempName()) ?: '';
+            $ext = strtolower($file->getExtension());
+            $tmp = $file->getTempName();
+
+            if ($ext === 'txt') {
+                $fileContent = file_get_contents($tmp) ?: '';
+            } elseif ($ext === 'pdf') {
+                $pdfText = shell_exec('pdftotext -layout ' . escapeshellarg($tmp) . ' -');
+                $fileContent = $pdfText ?: '';
+                if (empty(trim($fileContent))) {
+                    $raw = file_get_contents($tmp);
+                    $raw = preg_replace('/[^\x20-\x7E\x0A\x0D\x80-\xFF]/', ' ', $raw);
+                    $raw = preg_replace('/\s+/', ' ', $raw);
+                    if (strlen($raw) > 100) $fileContent = trim($raw);
+                }
+            } elseif ($ext === 'docx') {
+                $zip = new \ZipArchive();
+                if ($zip->open($tmp) === true) {
+                    $xml = $zip->getFromName('word/document.xml');
+                    $zip->close();
+                    if ($xml) {
+                        $xml = preg_replace('/<w:p[^>]*>/', "\n", $xml);
+                        $xml = preg_replace('/<[^>]+>/', '', $xml);
+                        $fileContent = html_entity_decode(trim($xml));
+                    }
+                }
+                if (empty(trim($fileContent))) {
+                    $raw = file_get_contents($tmp);
+                    $raw = preg_replace('/[^\x20-\x7E\x0A\x0D\x80-\xFF]/', ' ', $raw);
+                    $raw = preg_replace('/\s+/', ' ', $raw);
+                    if (strlen($raw) > 100) $fileContent = trim($raw);
+                }
+            } else {
+                $raw = file_get_contents($tmp);
+                $raw = preg_replace('/[^\x20-\x7E\x0A\x0D\x80-\xFF]/', ' ', $raw);
+                $raw = preg_replace('/\s+/', ' ', $raw);
+                if (strlen($raw) > 100) $fileContent = trim($raw);
             }
         }
 

@@ -23,7 +23,13 @@ class AuthController extends BaseController
                 'email'     => $user['email'],
                 'nama'      => $user['nama'] ?? $user['email'],
                 'user_id'   => $user['id'] ?? null,
+                'role'      => $user['role'] ?? 'user',
             ]);
+
+            if (session()->get('role') === 'admin') {
+                return redirect()->to('/admin/dashboard');
+            }
+
             return redirect()->to('/home');
         }
 
@@ -49,6 +55,7 @@ class AuthController extends BaseController
             'nama' => $this->request->getPost('nama'),
             'email' => $this->request->getPost('email'),
             'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+            'role' => 'user',
         ];
         $userModel->insert($data);
 
