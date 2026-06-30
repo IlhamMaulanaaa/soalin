@@ -458,14 +458,47 @@ function renderRawSoal(text) {
 }
 
 function simpanBankSoal() {
+  if (!generatedRawText) { alert('Tidak ada soal untuk disimpan.'); return; }
   const btn = document.getElementById('btnSimpan');
+  const origText = btn.innerHTML;
   btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
   btn.disabled = true;
-  // Simple placeholder - wire to actual bank soal save
-  setTimeout(() => {
-    btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Tersimpan di Bank Soal!';
-    btn.style.background = '#15803d';
-  }, 800);
+
+  const csrf = document.querySelector('input[csrf]')?.value ?? document.querySelector('input[name="csrf_test_name"]')?.value ?? '';
+  const form = document.getElementById('generateForm');
+  const data = new FormData();
+  data.append('soal_text', generatedRawText);
+  data.append('mapel', document.getElementById('hiddenMapel').value);
+  data.append('jenjang', document.getElementById('hiddenJenjang').value);
+  data.append('jumlah_soal', document.getElementById('hiddenJumlah').value);
+  data.append('kesulitan', document.getElementById('hiddenKesulitan').value);
+  data.append('tipe_soal', document.getElementById('hiddenTipe').value);
+
+  const csrfInput = document.querySelector('input[name="<?= csrf_token() ?>"]');
+  if (csrfInput) data.append(csrfInput.name, csrfInput.value);
+
+  fetch('<?= base_url('bank-soal/simpan') ?>', {
+    method: 'POST',
+    body: data,
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.status === 'success') {
+      btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Tersimpan di Bank Soal!';
+      btn.style.background = '#15803d';
+      btn.disabled = false;
+    } else {
+      alert(res.message);
+      btn.innerHTML = origText;
+      btn.disabled = false;
+    }
+  })
+  .catch(() => {
+    alert('Gagal menyimpan. Coba lagi.');
+    btn.innerHTML = origText;
+    btn.disabled = false;
+  });
 }
 
 function resetWizard() {
