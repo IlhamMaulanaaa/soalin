@@ -20,7 +20,7 @@ class GenerateSoal extends BaseController
         // Ambil parameter dari wizard
         $mapel       = $this->request->getPost('mapel') ?? $this->request->getPost('mata_pelajaran');
         $jenjang     = $this->request->getPost('jenjang') ?? $this->request->getPost('kelas');
-        $jumlah      = $this->request->getPost('jumlah_soal') ?? 10;
+        $jumlah      = (int) ($this->request->getPost('jumlah_soal') ?? 10);
         $kesulitan   = $this->request->getPost('kesulitan') ?? 'Sedang';
         $tipeSoal    = $this->request->getPost('tipe_soal') ?? $this->request->getPost('jenis_soal') ?? 'Pilihan Ganda';
         $materiText  = $this->request->getPost('materi') ?? '';
@@ -31,13 +31,21 @@ class GenerateSoal extends BaseController
         if ($file && $file->isValid() && !$file->hasMoved()) {
             $mime = $file->getClientMimeType();
             if (str_contains($mime, 'text') || in_array($file->getExtension(), ['txt', 'pdf', 'doc', 'docx'])) {
-                $fileContent = file_get_contents($file->getTempName());
+                $fileContent = file_get_contents($file->getTempName()) ?: '';
             }
         }
 
         $materi = $fileContent ?: $materiText;
         if (empty(trim($materi))) {
             return redirect()->to('/generate-soal')->with('error', 'Materi tidak boleh kosong!');
+        }
+
+        $jumlah = max(1, min($jumlah, 20));
+
+        $maxMateriLength = 12000;
+        $materi = trim($materi);
+        if (mb_strlen($materi, 'UTF-8') > $maxMateriLength) {
+            $materi = mb_substr($materi, 0, $maxMateriLength, 'UTF-8') . "\n\n[Materi dipotong otomatis karena terlalu panjang.]";
         }
 
         // Susun prompt
@@ -48,11 +56,22 @@ class GenerateSoal extends BaseController
         $prompt .= "Tipe Soal: {$tipeSoal}\n\n";
         $prompt .= "Materi:\n{$materi}\n\n";
         $prompt .= "Buatkan tepat {$jumlah} soal {$tipeSoal}. ";
+
         if (str_contains($tipeSoal, 'Pilihan Ganda')) {
-            $prompt .= "Setiap soal harus memiliki 4 pilihan jawaban (A, B, C, D) dan sertakan kunci jawaban. ";
+            $prompt .= "Setiap soal harus memiliki 4 pilihan jawaban (A, B, C, D) dan sertakan kunci jawaban. Format:\n";
+            $prompt .= "1. [Pertanyaan]\n   A. ...\n   B. ...\n   C. ...\n   D. ...\n   Jawaban: [huruf]\n\n";
+        } elseif (str_contains($tipeSoal, 'Benar/Salah') || str_contains($tipeSoal, 'Benar') || str_contains($tipeSoal, 'Salah')) {
+            $prompt .= "Setiap soal harus memiliki pilihan Benar atau Salah dan sertakan kunci jawaban. Format:\n";
+            $prompt .= "1. [Pernyataan]\n   Jawaban: [Benar/Salah]\n\n";
+        } elseif (str_contains($tipeSoal, 'Campuran')) {
+            $prompt .= "Campurkan berbagai tipe soal: Pilihan Ganda, Essay, dan Benar/Salah. Variasikan secara merata. ";
+            $prompt .= "Untuk Pilihan Ganda sertakan 4 opsi (A, B, C, D) dan kunci. ";
+            $prompt .= "Format:\n1. [Pertanyaan/Pernyataan]\n   Opsi jika ada\n   Jawaban: ...\n\n";
+        } else {
+            $prompt .= "Setiap soal cukup berupa pertanyaan esai tanpa pilihan jawaban. Sertakan kunci jawaban di bawah setiap soal. Format:\n";
+            $prompt .= "1. [Pertanyaan]\n   Jawaban: ...\n\n";
         }
-        $prompt .= "Format output:\n";
-        $prompt .= "1. [Pertanyaan]\n   A. ...\n   B. ...\n   C. ...\n   D. ...\n   Jawaban: [huruf]\n\n";
+
         $prompt .= "Langsung tulis soal-soalnya tanpa pengantar.";
 
         // Ambil API key dari database atau .env
@@ -67,20 +86,28 @@ class GenerateSoal extends BaseController
         $url    = 'https://api.groq.com/openai/v1/chat/completions';
         $client = \Config\Services::curlrequest();
 
+        $payload = [
+            'model'    => 'llama-3.3-70b-versatile',
+            'messages' => [
+                ['role' => 'system', 'content' => 'Anda adalah asisten AI pendidik yang membantu guru menyusun soal latihan berkualitas sesuai standar pendidikan Indonesia.'],
+                ['role' => 'user',   'content' => $prompt],
+            ],
+            'temperature' => 0.7,
+            'max_tokens'  => 4096,
+        ];
+
+        $jsonPayload = json_encode($payload, JSON_INVALID_UTF8_SUBSTITUTE);
+        if ($jsonPayload === false) {
+            return redirect()->to('/generate-soal')->with('error', 'Materi tidak bisa diproses. Pastikan isi materi berupa teks yang valid.');
+        }
+
         try {
             $response = $client->request('POST', $url, [
                 'headers' => [
                     'Authorization' => 'Bearer ' . $apiKey,
                     'Content-Type'  => 'application/json',
                 ],
-                'json' => [
-                    'model'    => 'llama-3.3-70b-versatile',
-                    'messages' => [
-                        ['role' => 'system', 'content' => 'Anda adalah asisten AI pendidik yang membantu guru menyusun soal latihan berkualitas sesuai standar pendidikan Indonesia.'],
-                        ['role' => 'user',   'content' => $prompt],
-                    ],
-                    'temperature' => 0.7,
-                ],
+                'body'       => $jsonPayload,
                 'verify'      => false,
                 'http_errors' => false,
             ]);
@@ -95,7 +122,6 @@ class GenerateSoal extends BaseController
             $body      = json_decode($response->getBody(), true);
             $rawText   = $body['choices'][0]['message']['content'] ?? '';
 
-            // Kembalikan ke wizard view (step 3) dengan raw text
             return view('generate_soal', [
                 'soal_result'    => $rawText,
                 'mapel'          => $mapel,
