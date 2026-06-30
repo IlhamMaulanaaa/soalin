@@ -24,6 +24,8 @@ $routes->post('/generate-soal/process', 'GenerateSoal::process');
 // Bank Soal
 $routes->get('/bank-soal', 'BankSoal::index');
 $routes->post('/bank-soal/simpan', 'BankSoal::simpan');
+$routes->get('/bank-soal/detail/(:num)', 'BankSoal::detail/$1');
+$routes->post('/bank-soal/hapus/(:num)', 'BankSoal::hapus/$1');
 
 // Pengaturan - sub pages
 $routes->get('/pengaturan', 'Pengaturan::index');
