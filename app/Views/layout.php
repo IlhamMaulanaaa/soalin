@@ -38,6 +38,20 @@ if (uri_string() != "") {
   <!-- Template Main CSS File -->
   <link href="<?= base_url() ?>NiceAdmin/assets/css/style.css" rel="stylesheet">
 
+  <style>
+    /* Responsive fix for small laptops */
+    @media (min-width: 1200px) and (max-width: 1400px) {
+      #main { padding: 15px 18px; }
+      .sidebar { width: 260px; padding: 15px; }
+      #main, #footer { margin-left: 260px; }
+      .sidebar-nav .nav-link { font-size: 0.88rem; padding: 0.6rem 0.9rem; }
+    }
+    @media (max-width: 1199px) {
+      .sidebar { width: 260px; }
+    }
+    .container-fluid { overflow-x: hidden; }
+  </style>
+
   <!-- =======================================================
   * Template Name: NiceAdmin
   * Updated: Mar 09 2023 with Bootstrap v5.2.3

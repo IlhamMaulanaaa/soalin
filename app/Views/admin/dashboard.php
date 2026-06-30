@@ -13,6 +13,16 @@
 .badge-role{display:inline-block;padding:4px 12px;border-radius:30px;font-size:0.75rem;font-weight:700;}
 .badge-admin{background:#fef3c7;color:#b45309;}
 .badge-user{background:#dcfce7;color:#16a34a;}
+@media (max-width: 1400px){
+  .page-title{font-size:22px;}
+  .stat-card{padding:1.25rem;}
+  .stat-num{font-size:1.7rem;}
+}
+@media (max-width: 768px){
+  .stat-card{padding:1rem;}
+  .stat-num{font-size:1.4rem;}
+  .stat-icon{width:44px;height:44px;font-size:1.3rem;}
+}
 </style>
 
 <div class="page-title mb-4">Dashboard Admin</div>

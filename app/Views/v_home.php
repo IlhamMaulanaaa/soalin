@@ -197,87 +197,30 @@
         z-index: 1;
     }
 
-    .activity-list {
-        background: white;
-        border-radius: 1.25rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-        padding: 0;
+    @media (max-width: 1400px) {
+        .hero-card { padding: 2.5rem 2rem; }
+        .hero-card h2 { font-size: 1.7rem; }
+        .hero-card p { font-size: 1rem; max-width: 75%; }
+        .stat-info .stat-val { font-size: 1.6rem; }
+        .action-card { padding: 1.5rem 1.25rem; }
+        .activity-item { padding: 1rem 1.25rem; }
     }
-    .activity-item {
-        display: flex;
-        align-items: center;
-        padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid #f1f5f9;
-        transition: background-color 0.2s;
+    @media (max-width: 1199px) {
+        .hero-card h2 { font-size: 1.5rem; }
+        .hero-card p { max-width: 100%; font-size: 0.95rem; }
+        .stat-info .stat-val { font-size: 1.4rem; }
+        .stat-card { padding: 1rem; }
+        .stat-icon { width: 48px; height: 48px; font-size: 1.4rem; margin-right: 0.8rem; }
     }
-    .activity-item:hover {
-        background-color: #f8fafc;
-    }
-    .activity-item:last-child {
-        border-bottom: none;
-    }
-    .activity-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.35rem;
-        margin-right: 1.25rem;
-        flex-shrink: 0;
-    }
-    .activity-icon.bg-blue-light { background-color: #e0f2fe; color: #0284c7; }
-    .activity-icon.bg-orange-light { background-color: #ffedd5; color: #ea580c; }
-    .activity-icon.bg-green-light { background-color: #dcfce7; color: #16a34a; }
-    .activity-icon.bg-purple-light { background-color: #f3e8ff; color: #9333ea; }
-    
-    .activity-details {
-        flex-grow: 1;
-    }
-    .activity-details h6 {
-        font-weight: 700;
-        color: #0f172a;
-        margin-bottom: 0.3rem;
-        font-size: 1rem;
-    }
-    .activity-details p {
-        color: #64748b;
-        font-size: 0.85rem;
-        margin-bottom: 0;
-    }
-    .activity-actions {
-        display: flex;
-        gap: 0.6rem;
-    }
-    .activity-actions .btn-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #64748b;
-        background: transparent;
-        border: none;
-        transition: all 0.2s;
-        font-size: 1.1rem;
-    }
-    .activity-actions .btn-icon:hover {
-        background-color: #f1f5f9;
-        color: #0d47a1;
-    }
-
     @media (max-width: 768px) {
-        .hero-card {
-            padding: 2rem 1.5rem;
-        }
-        .hero-card p {
-            max-width: 100%;
-        }
-        .hero-icon-container, .hero-stars {
-            display: none;
-        }
+        .hero-card { padding: 2rem 1.5rem; }
+        .hero-card p { max-width: 100%; }
+        .hero-icon-container, .hero-stars { display: none; }
+    }
+    @media (max-width: 576px) {
+        .hero-card h2 { font-size: 1.25rem; }
+        .stat-card { flex-direction: column; text-align: center; }
+        .stat-icon { margin-right: 0; margin-bottom: 0.5rem; }
     }
 </style>
 
@@ -338,90 +281,31 @@
     <!-- Main Content Columns -->
     <div class="row">
         <!-- Aksi Cepat -->
-        <div class="col-lg-5 mb-4">
+        <div class="col-12 mb-4">
             <div class="section-title">
                 <span>Aksi Cepat</span>
             </div>
             
-            <div class="action-card bg-white theme-primary">
-                <div class="action-icon">
-                    <i class="bi bi-file-earmark-arrow-up"></i>
-                </div>
-                <h5>Upload Materi & Generate Soal</h5>
-                <p>Unggah PDF atau dokumen materi. Biarkan AI kami mengekstrak poin penting dan membuat butir soal.</p>
-                <i class="bi bi-file-text-fill action-bg-icon"></i>
-            </div>
-            
-            <div class="action-card bg-white theme-secondary">
-                <div class="action-icon">
-                    <i class="bi bi-list-task"></i>
-                </div>
-                <h5>Lihat Bank Soal</h5>
-                <p>Kelola ribuan soal yang sudah Anda buat. Kategorikan berdasarkan tingkat kesulitan dan kurikulum.</p>
-                <i class="bi bi-star-fill action-bg-icon" style="right: -40px; bottom: -50px; font-size: 14rem;"></i>
-            </div>
-        </div>
-
-        <!-- Aktivitas Terakhir -->
-        <div class="col-lg-7">
-            <div class="section-title">
-                <span>Aktivitas Terakhir</span>
-                <a href="#">Lihat Semua</a>
-            </div>
-            <div class="activity-list">
-                <div class="activity-item">
-                    <div class="activity-icon bg-blue-light">
-                        <i class="bi bi-moisture"></i>
-                    </div>
-                    <div class="activity-details">
-                        <h6>Fisika - Hukum Newton</h6>
-                        <p>Dibuat 2 jam yang lalu • 20 Soal PG</p>
-                    </div>
-                    <div class="activity-actions">
-                        <button class="btn-icon"><i class="bi bi-eye"></i></button>
-                        <button class="btn-icon"><i class="bi bi-download"></i></button>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="action-card bg-white theme-primary h-100">
+                        <div class="action-icon">
+                            <i class="bi bi-file-earmark-arrow-up"></i>
+                        </div>
+                        <h5>Upload Materi & Generate Soal</h5>
+                        <p>Unggah PDF atau dokumen materi. Biarkan AI kami mengekstrak poin penting dan membuat butir soal.</p>
+                        <i class="bi bi-file-text-fill action-bg-icon"></i>
                     </div>
                 </div>
                 
-                <div class="activity-item">
-                    <div class="activity-icon bg-orange-light">
-                        <i class="bi bi-hash"></i>
-                    </div>
-                    <div class="activity-details">
-                        <h6>Matematika - Aljabar</h6>
-                        <p>Dibuat Kemarin • 15 Soal PG & Isian</p>
-                    </div>
-                    <div class="activity-actions">
-                        <button class="btn-icon"><i class="bi bi-eye"></i></button>
-                        <button class="btn-icon"><i class="bi bi-download"></i></button>
-                    </div>
-                </div>
-
-                <div class="activity-item">
-                    <div class="activity-icon bg-green-light">
-                        <i class="bi bi-flower1"></i>
-                    </div>
-                    <div class="activity-details">
-                        <h6>Biologi - Sel Hewan</h6>
-                        <p>3 hari yang lalu • 25 Soal PG</p>
-                    </div>
-                    <div class="activity-actions">
-                        <button class="btn-icon"><i class="bi bi-eye"></i></button>
-                        <button class="btn-icon"><i class="bi bi-download"></i></button>
-                    </div>
-                </div>
-
-                <div class="activity-item">
-                    <div class="activity-icon bg-purple-light">
-                        <i class="bi bi-flag-fill"></i>
-                    </div>
-                    <div class="activity-details">
-                        <h6>Sejarah - Proklamasi</h6>
-                        <p>5 hari yang lalu • 30 Soal Essay</p>
-                    </div>
-                    <div class="activity-actions">
-                        <button class="btn-icon"><i class="bi bi-eye"></i></button>
-                        <button class="btn-icon"><i class="bi bi-download"></i></button>
+                <div class="col-md-6">
+                    <div class="action-card bg-white theme-secondary h-100">
+                        <div class="action-icon">
+                            <i class="bi bi-list-task"></i>
+                        </div>
+                        <h5>Lihat Bank Soal</h5>
+                        <p>Kelola ribuan soal yang sudah Anda buat. Kategorikan berdasarkan tingkat kesulitan dan kurikulum.</p>
+                        <i class="bi bi-star-fill action-bg-icon" style="right: -40px; bottom: -50px; font-size: 14rem;"></i>
                     </div>
                 </div>
             </div>
