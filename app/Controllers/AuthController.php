@@ -39,6 +39,11 @@ class AuthController extends BaseController
     public function registerProcess()
     {
         $userModel = new UserModel();
+        $user = $userModel->where('email', $this->request->getPost('email'))->first();
+        if ($user) {
+            session()->setFlashdata('error', 'Email sudah terdaftar!');
+            return redirect()->to('/register');
+        }
 
         $data = [
             'nama' => $this->request->getPost('nama'),
