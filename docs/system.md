@@ -1,365 +1,289 @@
 # SOALin — Dokumentasi Sistem
 
-Aplikasi web generate soal otomatis berbasis AI (Groq API) menggunakan CodeIgniter 4.
+Aplikasi web generate soal otomatis berbasis AI untuk platform sekolah.
+**Kepala Sekolah** sebagai **Admin** — **Guru** sebagai **User**.
 
 ---
 
-## 1. Arsitektur
+## 1. Analogi Platform Sekolah
 
 ```
-Tech Stack: PHP 8.2+ / CodeIgniter 4.7 / MySQL / Groq API (Llama 3.3 70B)
-Template Admin: NiceAdmin (Bootstrap 5.2 + CDN)
-```
-
-### Struktur Direktori (app/)
-
-```
-app/
-├── Config/
-│   ├── App.php          → baseURL auto-detect dari request
-│   ├── Routes.php       → semua routing
-│   └── Filters.php      → config filter (admin nanti)
-├── Controllers/
-│   ├── AuthController     → login / register / logout
-│   ├── Home               → landing page + dashboard user
-│   ├── GenerateSoal       → wizard generate soal via AI
-│   ├── BankSoal           → CRUD bank soal (per user)
-│   ├── Pengaturan         → profil, sandi, preferensi, API key
-│   └── BaseController     → class dasar
-├── Models/
-│   ├── UserModel          → users
-│   ├── SoalModel          → soal (bank soal)
-│   └── ApiKeyModel        → api_keys (Groq API key)
-├── Views/
-│   ├── layout.php         → template utama (sidebar + header + footer)
-│   ├── landing.php        → halaman depan (guest)
-│   ├── v_home.php         → dashboard user
-│   ├── generate_soal.php  → wizard 3 langkah
-│   ├── bank_soal.php      → daftar bank soal user
-│   ├── bank_soal_detail.php → detail soal tersimpan
-│   ├── auth/
-│   │   ├── login.php
-│   │   └── register.php
-│   ├── pengaturan/
-│   │   ├── profil.php, sandi.php, preferensi.php
-│   │   ├── tampilan.php, api_key.php
-│   │   └── layout_pengaturan.php
-│   └── components/
-│       ├── header.php
-│       ├── sidebar.php
-│       └── footer.php
-├── Database/Migrations/
-│   ├── 2026-04-26-122423_Users.php
-│   ├── 2026-05-25-000001_CreateApiKeysTable.php
-│   └── 2026-06-30-000001_CreateSoalTable.php
-└── Filters/ (akan dibuat)
-    └── AdminFilter.php    → filter role admin
-```
-
-### Database
-
-```sql
--- users
-id INT PK AUTO_INCREMENT
-name VARCHAR(50)
-email VARCHAR(50) UNIQUE
-password VARCHAR(255)
-role VARCHAR(20) DEFAULT 'user'       -- 'user' | 'admin'
-created_at DATETIME
-updated_at DATETIME
-
--- api_keys
-id INT PK AUTO_INCREMENT
-key_name VARCHAR(100)
-api_key TEXT
-created_at DATETIME
-updated_at DATETIME
-
--- soal
-id INT PK AUTO_INCREMENT
-user_id INT FK → users.id
-mapel VARCHAR(100)
-jenjang VARCHAR(50)
-jumlah_soal INT
-kesulitan VARCHAR(50)
-tipe_soal VARCHAR(50)
-soal_text LONGTEXT
-created_at DATETIME
-updated_at DATETIME
+            ┌─────────────────────────────────────┐
+            │         SOALin - Platform Sekolah     │
+            │                                      │
+            │  ┌─────────────┐   ┌──────────────┐  │
+            │  │  KEPSEK     │   │    GURU       │  │
+            │  │  (Admin)    │   │   (User)      │  │
+            │  ├─────────────┤   ├──────────────┤  │
+            │  │ Melihat     │   │ Generate Soal │  │
+            │  │ semua guru  │   │ via AI        │  │
+            │  │ & soal      │   │               │  │
+            │  │─────────────│   │ Simpan ke     │  │
+            │  │ Mengelola   │   │ Bank Soal     │  │
+            │  │ akun guru   │   │ pribadi       │  │
+            │  └─────────────┘   └──────────────┘  │
+            └─────────────────────────────────────┘
 ```
 
 ---
 
-## 2. Role & Hak Akses
+## 2. Siapa Saja Penggunanya?
 
-| Fitur | Guest | User | Admin |
-|-------|-------|------|-------|
-| Landing page | ✅ | — | — |
-| Register | ✅ | — | — |
-| Login | ✅ | — | — |
-| Dashboard user | — | ✅ | ✅ |
-| Generate Soal (AI) | — | ✅ | ✅ |
-| Bank Soal (milik sendiri) | — | ✅ | ✅ |
-| Pengaturan (profil/sandi/pref/api) | — | ✅ | ✅ |
-| Kelola semua user | — | — | ✅ |
-| Lihat semua bank soal | — | — | ✅ |
-| Hapus user/soal lain | — | — | ✅ |
+| Peran | Di Sistem | Bisa Apa? |
+|-------|-----------|-----------|
+| **Pengunjung** | Guest | Lihat landing page, daftar akun |
+| **Guru** | User (role: `user`) | Generate soal AI, simpan bank soal, atur profil |
+| **Kepala Sekolah** | Admin (role: `admin`) | Semua bisa Guru + kelola semua guru & soal |
 
 ---
 
-## 3. Routes
+## 3. Alur Guru (User Flow)
 
-### Guest & Auth
-
-| Method | URL | Controller | Keterangan |
-|--------|-----|------------|------------|
-| GET | `/` | `Home::index` | Landing page (guest) |
-| GET | `/login` | `AuthController::index` | Form login |
-| POST | `/login` | `AuthController::login` | Proses login |
-| GET | `/register` | `AuthController::register` | Form register |
-| POST | `/register` | `AuthController::registerProcess` | Proses register |
-| GET | `/logout` | `AuthController::logout` | Logout + destroy session |
-
-### User (harus login)
-
-| Method | URL | Controller | Keterangan |
-|--------|-----|------------|------------|
-| GET | `/home` | `Home::dashboard` | Dashboard user |
-| GET | `/generate-soal` | `GenerateSoal::index` | Wizard step 1-2 |
-| POST | `/generate-soal/process` | `GenerateSoal::process` | Panggil Groq API |
-| GET | `/bank-soal` | `BankSoal::index` | Daftar bank soal (milik sendiri) |
-| POST | `/bank-soal/simpan` | `BankSoal::simpan` | Simpan hasil generate (AJAX) |
-| GET | `/bank-soal/detail/(:num)` | `BankSoal::detail` | Detail soal |
-| POST | `/bank-soal/hapus/(:num)` | `BankSoal::hapus` | Hapus soal sendiri |
-| GET | `/pengaturan` | `Pengaturan::index` | Redirect ke profil |
-| GET | `/pengaturan/profil` | `Pengaturan::profil` | Edit profil |
-| POST | `/pengaturan/profil` | `Pengaturan::profilUpdate` | Simpan profil |
-| GET | `/pengaturan/sandi` | `Pengaturan::sandi` | Ganti password |
-| POST | `/pengaturan/sandi` | `Pengaturan::sandiUpdate` | Simpan password |
-| GET | `/pengaturan/preferensi` | `Pengaturan::preferensi` | Preferensi default soal |
-| POST | `/pengaturan/preferensi` | `Pengaturan::preferensiUpdate` | Simpan preferensi |
-| GET | `/pengaturan/tampilan` | `Pengaturan::tampilan` | Pengaturan tampilan |
-| GET | `/pengaturan/api-key` | `Pengaturan::apiKey` | Kelola API key Groq |
-| POST | `/pengaturan/api-key/store` | `Pengaturan::apiKeyStore` | Tambah API key |
-| GET | `/pengaturan/api-key/edit/(:num)` | `Pengaturan::apiKeyEdit` | Form edit API key |
-| POST | `/pengaturan/api-key/update/(:num)` | `Pengaturan::apiKeyUpdate` | Simpan edit API key |
-| POST | `/pengaturan/api-key/delete/(:num)` | `Pengaturan::apiKeyDelete` | Hapus API key |
-
-### Admin (hanya role = admin)
-
-| Method | URL | Controller | Keterangan |
-|--------|-----|------------|------------|
-| GET | `/admin/dashboard` | `Admin::dashboard` | Dashboard admin (statistik) |
-| GET | `/admin/users` | `Admin::users` | Daftar semua user |
-| POST | `/admin/users/hapus/(:num)` | `Admin::hapusUser` | Hapus user + soal-nya |
-| GET | `/admin/bank-soal` | `Admin::bankSoal` | Semua bank soal (seluruh user) |
-| GET | `/admin/bank-soal/detail/(:num)` | `Admin::bankSoalDetail` | Detail soal milik siapapun |
-| POST | `/admin/bank-soal/hapus/(:num)` | `Admin::hapusSoal` | Hapus soal milik siapapun |
-
-Semua route `/admin/*` diproteksi oleh `AdminFilter`.
-
----
-
-## 4. Auth Flow
+### 3.1. Pertama Kali (Registrasi)
 
 ```
-Register                           Login
-  │                                  │
-  v                                  v
-UserModel::insert                  UserModel::where(email)
-role = 'user' (default)            password_verify()
-  │                                  │
-  v                                  v
-redirect /login                  session set:
-                                   logged_in = true
-                                   user_id, email, nama, role
-                                      │
-                                      v
-                              role = 'admin'? ──yes──→ /admin/dashboard
-                                      │ no
-                                      v
-                                   /home
-```
-
-### Session Data
-
-```php
-$_SESSION['logged_in'] = true
-$_SESSION['user_id']   = 1
-$_SESSION['email']     = 'user@mail.com'
-$_SESSION['nama']      = 'Nama User'
-$_SESSION['role']      = 'user' | 'admin'
-```
-
----
-
-## 5. Generate Soal Flow
-
-```
-Step 1: Upload Materi
-  ├── Upload file (PDF/DOC/DOCX/TXT) → baca teks
-  └── Atau ketik manual
-        │
-        v
-Step 2: Parameter Soal
-  ├── Mata Pelajaran
-  ├── Jenjang (SD/SMP/SMA/PT)
-  ├── Jumlah Soal (1-20, dibatasi)
-  ├── Tingkat Kesulitan (Mudah/Sedang/Sulit/Campuran)
-  └── Tipe Soal (PG/Essay/BenarSalah/Campuran)
-        │
-        v
-Step 3: AI Generate (Groq API)
-  ├── Prompt dinamis sesuai tipe soal
-  ├── Materi dipotong max 12.000 char
-  ├── JSON payload dengan JSON_INVALID_UTF8_SUBSTITUTE
-  └── max_tokens = 4096
-        │
-        v
-  Hasil ditampilkan → bisa "Simpan ke Bank Soal"
-```
-
-### Prompt Template (per tipe)
-
-- **Pilihan Ganda**: format `1. [Soal] \n A. ... B. ... C. ... D. ... \n Jawaban: [huruf]`
-- **Essay**: format `1. [Soal] \n Jawaban: ...`
-- **Benar/Salah**: format `1. [Pernyataan] \n Jawaban: Benar/Salah`
-- **Campuran**: kombinasi ketiganya
-
----
-
-## 6. Bank Soal Flow
-
-```
-User: Generate Soal → Hasil → Klik "Simpan ke Bank Soal"
-                                    │
-                                    v
-                              AJAX POST /bank-soal/simpan
-                              { mapel, jenjang, jumlah_soal,
-                                kesulitan, tipe_soal, soal_text }
-                                    │
-                                    v
-                              SoalModel::insert()
-                                    │
-                                    v
-                              Response JSON { status: 'success' }
-                                    │
-                                    v
-                              Tombol berubah "Tersimpan di Bank Soal!"
-
-User: Navigasi ke Bank Soal
+Guru baru datang ke sekolah (website)
          │
          v
-   GET /bank-soal
-   SoalModel::getByUser(user_id)
+ Membuka halaman SOALin
          │
          v
-   Tampil kartu-kartu bank soal milik user
-   ├── Lihat detail → GET /bank-soal/detail/(:num)
-   └── Hapus → POST /bank-soal/hapus/(:num)
+ Klik "Daftar" → isi nama, email, password
+         │
+         v
+ Admin secara otomatis memberikan kartu guru
+ dengan role = 'user'
+         │
+         v
+ Guru siap login dan mulai bekerja
+```
+
+### 3.2. Guru Mulai Bekerja (Login)
+
+```
+Guru masuk ruang guru (login)
+         │
+         v
+ Lihat dashboard → ada ringkasan:
+   - Total soal yang sudah dibuat
+   - Jumlah bank soal
+   - Tombol "Buat Soal Baru"
+         │
+         v
+ Klik "Generate Soal"
+```
+
+### 3.3. Guru Membuat Soal (Generate Soal AI)
+
+```
+LANGKAH 1 — Upload Materi
+  Guru upload file pelajaran (PDF/DOC/TXT)
+  atau ketik materi langsung
+         │
+         v
+LANGKAH 2 — Atur Soal
+  Guru pilih:
+  ├── Mata Pelajaran (Matematika, IPA, dll)
+  ├── Jenjang Kelas (SD/SMP/SMA)
+  ├── Jumlah Soal (maks 20)
+  ├── Tingkat Kesulitan (Mudah/Sedang/Sulit)
+  └── Tipe Soal (Pilihan Ganda/Essay/Benar-Salah/Campuran)
+         │
+         v
+LANGKAH 3 — AI Bekerja
+  Soal langsung dibuat oleh AI (Groq)
+  Guru lihat hasilnya di layar
+         │
+         v
+ Guru bisa:
+   ├── ❌ Hapus & ulang
+   ├── 🖨 Cetak langsung
+   └── ✅ Simpan ke Bank Soal pribadi
+```
+
+### 3.4. Guru Menyimpan Soal
+
+```
+Setelah soal jadi, guru klik "Simpan ke Bank Soal"
+         │
+         v
+ Soal tersimpan di Bank Soal pribadi milik guru itu sendiri
+         │
+         v
+ Guru bisa buka kapan saja:
+   ├── /bank-soal       → Lihat daftar semua soal yang pernah dibuat
+   ├── /bank-soal/detail/1 → Lihat isi soal lengkap
+   └── Hapus soal yang tidak dipakai lagi
+```
+
+### 3.5. Guru Mengatur Profil
+
+```
+Guru bisa ubah:
+   ├── /pengaturan/profil      → Ganti nama & email
+   ├── /pengaturan/sandi       → Ganti password
+   ├── /pengaturan/preferensi  → Atur default soal (biar每次 tidak isi ulang)
+   ├── /pengaturan/tampilan    → Atur tema tampilan
+   └── /pengaturan/api-key     → Input API key Groq (koneksi AI)
 ```
 
 ---
 
-## 7. Admin Flow
+## 4. Alur Kepala Sekolah (Admin Flow)
+
+### 4.1. Kepsek Masuk
 
 ```
-Admin Login
-    │
-    v
-Redirect ke /admin/dashboard
-    │
-    ├── Statistik: total user, total soal
-    │
-    ├── /admin/users
-    │   ├── Tabel semua user (nama, email, role, tgl daftar)
-    │   └── Tombol hapus user
-    │
-    └── /admin/bank-soal
-        ├── Tabel semua bank soal (mapel, jenjang, pembuat, jumlah, tgl)
-        ├── Lihat detail → /admin/bank-soal/detail/(:num)
-        └── Hapus → POST /admin/bank-soal/hapus/(:num)
+Kepala Sekolah login dengan akun khusus (role = admin)
+         │
+         v
+ Langsung diarahkan ke Dashboard Admin
+ (bukan dashboard guru biasa)
 ```
 
-### Filter Admin
+### 4.2. Dashboard Admin
 
-```php
-class AdminFilter implements FilterInterface
-{
-    public function before(RequestInterface $request, $arguments = null)
-    {
-        if (session()->get('role') !== 'admin') {
-            return redirect()->to('/home')
-                ->with('error', 'Akses hanya untuk admin!');
-        }
-    }
-}
 ```
+         ┌──────────────────────────────────┐
+         │     DASHBOARD KEPALA SEKOLAH      │
+         ├──────────────────────────────────┤
+         │  📊 Total Guru Terdaftar: 25     │
+         │  📚 Total Soal Dibuat: 1.247     │
+         │  🏫 Rata-rata Soal/Guru: 50     │
+         └──────────────────────────────────┘
+         │
+         v
+ Dari sini Kepsek bisa pantau aktivitas sekolah
+```
+
+### 4.3. Kelola Guru
+
+```
+Kepala Sekolah buka menu /admin/users
+         │
+         v
+ Lihat daftar semua guru:
+   ┌──────┬────────────┬──────────┬──────────────┐
+   │ Nama │   Email    │  Role    │  Tgl Daftar  │
+   ├──────┼────────────┼──────────┼──────────────┤
+   │ Bu Ani│ ani@sch.id│ user     │ 12 Jun 2026  │
+   │ Pak Budi│ budi@...│ user     │ 10 Jun 2026  │
+   │ ...   │            │          │              │
+   └──────┴────────────┴──────────┴──────────────┘
+         │
+         v
+ Kepsek bisa hapus guru yang sudah pindah/tidak aktif
+ (semua soal guru itu juga ikut terhapus)
+```
+
+### 4.4. Pantau Bank Soal Semua Guru
+
+```
+Kepala Sekolah buka menu /admin/bank-soal
+         │
+         v
+ Lihat daftar semua soal dari seluruh guru:
+   ┌──────────┬──────────┬──────────┬──────────┐
+   │ Mapel    │ Pembuat  │ Jumlah   │ Tanggal  │
+   ├──────────┼──────────┼──────────┼──────────┤
+   │ Matematika│ Bu Ani  │ 20 soal  │ 28 Jun   │
+   │ IPA      │ Pak Budi│ 15 soal  │ 27 Jun   │
+   │ ...      │          │          │          │
+   └──────────┴──────────┴──────────┴──────────┘
+         │
+         v
+ Kepsek bisa:
+   ├── Lihat detail soal siapa pun
+   └── Hapus soal yang tidak sesuai
+```
+
+### 4.5. Ringkasan Kewenangan Kepsek vs Guru
+
+| Aktivitas | Guru | Kepala Sekolah |
+|-----------|------|----------------|
+| Generate soal AI | ✅ | ✅ |
+| Simpan bank soal sendiri | ✅ | ✅ |
+| Lihat bank soal sendiri | ✅ | ✅ |
+| Hapus soal sendiri | ✅ | ✅ |
+| Atur profil sendiri | ✅ | ✅ |
+| Lihat semua guru | — | ✅ |
+| Hapus akun guru | — | ✅ |
+| Lihat bank soal guru lain | — | ✅ |
+| Hapus soal guru lain | — | ✅ |
+| Lihat statistik sekolah | — | ✅ |
 
 ---
 
-## 8. Environment Config
+## 5. Teknis Singkat
 
-File `.env` (tidak ikut git, lihat `.env.example`):
-
-```ini
-CI_ENVIRONMENT = development
-
-database.default.hostname = localhost
-database.default.database = team
-database.default.username = root
-database.default.password =
-database.default.DBDriver = MySQLi
-database.default.port = 3306
-
-GROQ_API_KEY = "gsk_xxxxxxxxxxxx"
+```
+Tech Stack: PHP 8.2, CodeIgniter 4.7, MySQL, Groq AI
+Template:   NiceAdmin (Bootstrap 5.2 via CDN)
+Database:   users, api_keys, soal
 ```
 
-Base URL auto-detect dari `$_SERVER['HTTP_HOST']` di `App.php`.
+### Struktur Database
+
+```
+users
+├── id, name, email, password
+├── role (user / admin)
+└── created_at, updated_at
+
+api_keys → menyimpan API key Groq
+├── id, key_name, api_key
+└── created_at, updated_at
+
+soal → bank soal tiap guru
+├── id, user_id (FK ke users)
+├── mapel, jenjang, jumlah_soal
+├── kesulitan, tipe_soal, soal_text
+└── created_at, updated_at
+```
+
+### Proteksi Halaman Admin
+
+Semua halaman admin dilindungi filter. Jika guru biasa coba akses `/admin/*`, akan dialihkan ke dashboard guru sendiri.
 
 ---
 
-## 9. Cara Install
+## 6. Cara Install
 
 ```bash
-# 1. Clone
+# 1. Clone dari GitHub
 git clone https://github.com/IlhamMaulanaaa/soalin.git
 cd soalin
 
-# 2. Install dependency PHP
+# 2. Install dependensi PHP
 composer install
 
-# 3. Copy env & sesuaikan
+# 3. Copy file env
 cp .env.example .env
-# edit .env: database, GROQ_API_KEY
+# lalu edit isinya: database, GROQ_API_KEY
 
-# 4. Migrasi database
+# 4. Jalankan migrasi database
 php spark migrate
 
-# 5. Seed admin (manual atau via seeder nanti)
-# Contoh: INSERT INTO users (name, email, password, role)
-# VALUES ('Admin', 'admin@soalin.com',
-#   '$2y$10$...', 'admin');
-# (password_hash('admin123', PASSWORD_DEFAULT))
+# 5. Buat akun Kepala Sekolah (admin)
+# Lewat MySQL:
+# INSERT INTO users (name, email, password, role)
+# VALUES ('Kepala Sekolah', 'kepsek@soalin.com',
+#   '$2y$10$hash_password_here', 'admin');
 
-# 6. Jalankan
+# 6. Jalankan aplikasi
 php spark serve
-# atau arahkan web server ke folder public/
+# Buka http://localhost:8080
 ```
 
----
-
-## 10. Catatan Teknis
+### Catatan
 
 | Aspek | Detail |
 |-------|--------|
-| Framework | CodeIgniter 4.7 |
-| PHP min | 8.2 |
+| Minimal PHP | 8.2 |
 | Database | MySQL / MariaDB |
-| AI Model | Groq Llama 3.3 70B (via API) |
-| UI Template | NiceAdmin (Bootstrap 5.2) |
-| Assets vendor | CDN (bootstrap, icons, charts) |
-| File upload | PDF/DOC/DOCX/TXT max 10MB |
-| Token limit | Input ~12rb char, output 4096 token |
+| AI Model | Groq Llama 3.3 70B |
+| Upload file | PDF/DOC/DOCX/TXT max 10 MB |
+| CSS/JS | Pakai CDN (tak perlu vendor folder) |
+| Base URL | Auto-detect (cocok di server mana pun) |
 
 ---
