@@ -68,9 +68,6 @@
     <a href="<?= base_url('pengaturan/preferensi') ?>" class="settings-nav-link <?= ($current === 'pengaturan/preferensi') ? 'active' : '' ?>">
       <i class="bi bi-sliders"></i> Preferensi Soal
     </a>
-    <a href="<?= base_url('pengaturan/tampilan') ?>" class="settings-nav-link <?= ($current === 'pengaturan/tampilan') ? 'active' : '' ?>">
-      <i class="bi bi-palette"></i> Tampilan
-    </a>
     <div class="settings-nav-divider"></div>
     <a href="<?= base_url('logout') ?>" class="settings-nav-link danger">
       <i class="bi bi-box-arrow-right"></i> Keluar

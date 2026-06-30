@@ -76,11 +76,6 @@
             <i class="bi bi-circle"></i><span>Preferensi Soal</span>
           </a>
         </li>
-        <li>
-          <a href="<?= base_url('pengaturan/tampilan') ?>" class="<?= ($uri === 'pengaturan/tampilan') ? 'active' : '' ?>">
-            <i class="bi bi-circle"></i><span>Tampilan</span>
-          </a>
-        </li>
       </ul>
     </li>
 

@@ -80,20 +80,6 @@ class Pengaturan extends BaseController
     public function preferensiUpdate()
     {
         if (!session()->get('logged_in')) return redirect()->to('/login');
-        // Simpan ke session sebagai preferensi default generate soal
-        session()->set('pref_jenjang',    $this->request->getPost('jenjang'));
-        session()->set('pref_jumlah',     $this->request->getPost('jumlah_soal'));
-        session()->set('pref_kesulitan',  $this->request->getPost('kesulitan'));
-        session()->set('pref_tipe_soal',  $this->request->getPost('tipe_soal'));
-        session()->set('pref_bahasa',     $this->request->getPost('bahasa'));
-        session()->setFlashdata('pref_success', 'Preferensi soal berhasil disimpan!');
-        return redirect()->to('/pengaturan/preferensi');
-    }
-
-    // ===== Tampilan =====
-    public function tampilan()
-    {
-        if (!session()->get('logged_in')) return redirect()->to('/login');
         return view('pengaturan/tampilan');
     }
 }

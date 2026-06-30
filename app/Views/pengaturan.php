@@ -246,38 +246,6 @@ body{
                 </div>
             </div>
 
-            <!-- Tampilan -->
-            <div class="card setting-card">
-                <div class="card-body">
-
-                    <div class="setting-title">
-                        <i class="bi bi-palette me-2"></i>
-                        Tampilan
-                    </div>
-
-                    <div class="switch-area">
-                        <span>Dark Mode</span>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox">
-                        </div>
-                    </div>
-
-                    <div class="switch-area">
-                        <span>Sidebar Mini</span>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" checked>
-                        </div>
-                    </div>
-
-                    <div class="switch-area">
-                        <span>Notifikasi Email</span>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" checked>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
 
         </div>
 

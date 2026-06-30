@@ -45,4 +45,3 @@ $routes->get('/pengaturan/sandi', 'Pengaturan::sandi');
 $routes->post('/pengaturan/sandi', 'Pengaturan::sandiUpdate');
 $routes->get('/pengaturan/preferensi', 'Pengaturan::preferensi');
 $routes->post('/pengaturan/preferensi', 'Pengaturan::preferensiUpdate');
-$routes->get('/pengaturan/tampilan', 'Pengaturan::tampilan');
