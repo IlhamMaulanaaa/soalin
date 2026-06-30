@@ -152,64 +152,6 @@ body{
                 </div>
             </div>
 
-            <!-- Preferensi -->
-            <div class="card setting-card">
-                <div class="card-body">
-
-                    <div class="setting-title">
-                        <i class="bi bi-sliders me-2"></i>
-                        Preferensi Generate Soal
-                    </div>
-
-                    <div class="row g-3">
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Jenjang Default</label>
-                            <select class="form-select">
-                                <option>SMA</option>
-                                <option>SMP</option>
-                                <option>SD</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Jumlah Soal</label>
-                            <select class="form-select">
-                                <option>10 Soal</option>
-                                <option>20 Soal</option>
-                                <option>30 Soal</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Tingkat Kesulitan</label>
-                            <select class="form-select">
-                                <option>Sedang</option>
-                                <option>Mudah</option>
-                                <option>Sulit</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Tipe Soal</label>
-                            <select class="form-select">
-                                <option>Pilihan Ganda</option>
-                                <option>Essay</option>
-                                <option>Benar / Salah</option>
-                            </select>
-                        </div>
-
-                        <div class="col-12 mt-3">
-                            <button class="btn btn-save">
-                                Simpan Preferensi
-                            </button>
-                        </div>
-
-                    </div>
-
-                </div>
-            </div>
-
         </div>
 
         <!-- KANAN -->

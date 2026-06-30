@@ -43,5 +43,3 @@ $routes->get('/pengaturan/profil', 'Pengaturan::profil');
 $routes->post('/pengaturan/profil', 'Pengaturan::profilUpdate');
 $routes->get('/pengaturan/sandi', 'Pengaturan::sandi');
 $routes->post('/pengaturan/sandi', 'Pengaturan::sandiUpdate');
-$routes->get('/pengaturan/preferensi', 'Pengaturan::preferensi');
-$routes->post('/pengaturan/preferensi', 'Pengaturan::preferensiUpdate');

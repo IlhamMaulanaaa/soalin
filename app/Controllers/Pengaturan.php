@@ -7,7 +7,6 @@ use App\Models\UserModel;
 
 class Pengaturan extends BaseController
 {
-    // Redirect /pengaturan -> /pengaturan/profil
     public function index()
     {
         if (!session()->get('logged_in')) return redirect()->to('/login');
@@ -68,18 +67,5 @@ class Pengaturan extends BaseController
         $userModel->update($id, ['password' => password_hash($baru, PASSWORD_DEFAULT)]);
         session()->setFlashdata('sandi_success', 'Password berhasil diperbarui!');
         return redirect()->to('/pengaturan/sandi');
-    }
-
-    // ===== Preferensi Soal =====
-    public function preferensi()
-    {
-        if (!session()->get('logged_in')) return redirect()->to('/login');
-        return view('pengaturan/preferensi');
-    }
-
-    public function preferensiUpdate()
-    {
-        if (!session()->get('logged_in')) return redirect()->to('/login');
-        return view('pengaturan/tampilan');
     }
 }

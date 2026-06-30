@@ -71,11 +71,6 @@
             <i class="bi bi-circle"></i><span>Ganti Sandi</span>
           </a>
         </li>
-        <li>
-          <a href="<?= base_url('pengaturan/preferensi') ?>" class="<?= ($uri === 'pengaturan/preferensi') ? 'active' : '' ?>">
-            <i class="bi bi-circle"></i><span>Preferensi Soal</span>
-          </a>
-        </li>
       </ul>
     </li>
 

@@ -65,9 +65,6 @@
     </a>
     <div class="settings-nav-divider"></div>
     <div class="settings-nav-title">Konfigurasi</div>
-    <a href="<?= base_url('pengaturan/preferensi') ?>" class="settings-nav-link <?= ($current === 'pengaturan/preferensi') ? 'active' : '' ?>">
-      <i class="bi bi-sliders"></i> Preferensi Soal
-    </a>
     <div class="settings-nav-divider"></div>
     <a href="<?= base_url('logout') ?>" class="settings-nav-link danger">
       <i class="bi bi-box-arrow-right"></i> Keluar
